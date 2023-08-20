@@ -7,7 +7,7 @@ import reviewsRoute from './routes/ratings/index.js'
 import projectRoute from './routes/project.js'
 import cookieParser from 'cookie-parser'
 import path from 'path'
-const __dirname = path.resolve()
+
 const app = express()
 
 app.use(function (req, res, next) {

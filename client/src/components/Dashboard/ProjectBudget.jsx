@@ -14,6 +14,7 @@ import { useQuery } from 'react-query'
 import { basicSchema, projectSchema } from '../../schemas'
 import { useFormik, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 const Wrap = styled.div`
   padding: 2rem 4rem;
@@ -273,6 +274,7 @@ const PostProject = () => {
   const [showPageTwo, setshowPageTwo] = useState(false)
   const [showPageThree, setshowPageThree] = useState(false)
   const [cvalues, setCvalues] = useState()
+  const navigate = useNavigate()
   const MainPage = () => {
     setshowPageOne(true)
     setshowPageTwo(false)
@@ -301,7 +303,7 @@ const PostProject = () => {
         option: values.option,
         category: values.category,
       })
-      console.log('fone')
+      navigate('/projects')
     } catch (err) {
       console.log(err)
     }

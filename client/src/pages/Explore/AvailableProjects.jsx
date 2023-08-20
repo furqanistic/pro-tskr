@@ -313,11 +313,8 @@ const AvailableProjects = () => {
   const { currentUser } = useSelector((state) => state.user)
 
   const { data, status } = useQuery('projects', async () => {
-    const res = await axiosInstance.get(
-      `/upload/project/client/64d84b6b90085918a2ec528a`
-    )
+    const res = await axiosInstance.get(`/upload/project/`)
     setProjectsLength(res.data.length)
-
     return res.data
   })
 

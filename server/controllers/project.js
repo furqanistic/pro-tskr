@@ -56,7 +56,9 @@ export const deleteProject = async (req, res) => {
 // 5. List all projects
 export const listProjects = async (req, res) => {
   try {
-    const projects = await Project.find({}).populate('client')
+    const projects = await Project.find({})
+      .populate('client')
+      .sort({ createdAt: -1 })
     res.send(projects)
   } catch (error) {
     res.status(500).send(error)

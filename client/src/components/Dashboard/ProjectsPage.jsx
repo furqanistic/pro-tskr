@@ -8,7 +8,7 @@ import CalenderIcon from '/Dashboard/30-days.svg'
 import ProposalsIcon from '/Dashboard/contract.svg'
 import PrevIcon from '/Dashboard/prev 1.svg'
 import NextIcon from '/Dashboard/next 1.svg'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from 'react-query'
 import { useSelector } from 'react-redux'
 import Loader from '../../pages/Loader'
@@ -245,6 +245,17 @@ const PageNum = styled.div`
 const PaginationIcon = styled.img`
   width: 14px;
 `
+const NothingDiv = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 20%;
+`
+const NothingText = styled.p`
+  font-size: 2rem;
+  font-weight: 800;
+`
 const ProjectsPage = () => {
   const [activeCategory, setActiveCategory] = useState('Active Projects')
   const [lineStyles, setLineStyles] = useState({})
@@ -278,7 +289,7 @@ const ProjectsPage = () => {
   }, [])
 
   // getting projects from database
-  const { data, status } = useQuery('projects', async () => {
+  const { data, error, status } = useQuery('user-projects', async () => {
     const res = await axiosInstance.get(
       `/upload/project/client/${currentUser._id}`
     )
@@ -318,92 +329,104 @@ const ProjectsPage = () => {
             <HeadButton>Add a New Project</HeadButton>
           </Link>
         </PageHead>
-        <BodyWrap>
-          <CatBar>
-            {categories.map((category) => (
-              <CatName
-                key={category}
-                $active={activeCategory === category}
-                onClick={() => handleCategoryClick(category)}
-                ref={(el) => {
-                  categoryRefs[category] = el
-                }}
-              >
-                {category}
-              </CatName>
-            ))}
-          </CatBar>
-          <FullLine />
-          {activeCategory && (
-            <ActiveLine $left={lineStyles.left} $width={lineStyles.width} />
-          )}
-          <ContentWrap>
-            {data.map((project) => (
-              <Content key={project._id}>
-                <ContentCorner>
-                  <Button src={EditIcon} bg='#EAF6EE' />
-                  <Button src={DeleteIcon} bg='#FCEDED' />
-                </ContentCorner>
-                <ProjectWrap>
-                  <ProjectCat>{project.category}</ProjectCat>
-                  <ProLine />
-                  <ProName>{project.projectName}</ProName>
-                  <DetailsBundle>
+        {error && (
+          <BodyWrap style={{ minHeight: '900px' }}>
+            <NothingDiv>
+              <NothingText>Nothing Posted Yet</NothingText>
+              <Link to='post-project' style={{ textDecoration: 'none' }}>
+                <HeadButton>Add a New Project</HeadButton>
+              </Link>
+            </NothingDiv>
+          </BodyWrap>
+        )}
+        {data && (
+          <BodyWrap>
+            <CatBar>
+              {categories.map((category) => (
+                <CatName
+                  key={category}
+                  $active={activeCategory === category}
+                  onClick={() => handleCategoryClick(category)}
+                  ref={(el) => {
+                    categoryRefs[category] = el
+                  }}
+                >
+                  {category}
+                </CatName>
+              ))}
+            </CatBar>
+            <FullLine />
+            {activeCategory && (
+              <ActiveLine $left={lineStyles.left} $width={lineStyles.width} />
+            )}
+            <ContentWrap>
+              {data.map((project) => (
+                <Content key={project._id}>
+                  <ContentCorner>
+                    <Button src={EditIcon} bg='#EAF6EE' />
+                    <Button src={DeleteIcon} bg='#FCEDED' />
+                  </ContentCorner>
+                  <ProjectWrap>
+                    <ProjectCat>{project.category}</ProjectCat>
+                    <ProLine />
+                    <ProName>{project.projectName}</ProName>
+                    <DetailsBundle>
+                      <BundleWrap>
+                        <BundleImage src={PlaceIcon} />
+                        <BundleText>London, Uk</BundleText>
+                      </BundleWrap>
+                      <BundleWrap>
+                        <BundleImage src={CalenderIcon} />
+                        <BundleText>
+                          {dayjs(project.postedAt).fromNow()}
+                        </BundleText>
+                      </BundleWrap>
+                    </DetailsBundle>
                     <BundleWrap>
-                      <BundleImage src={PlaceIcon} />
-                      <BundleText>London, Uk</BundleText>
-                    </BundleWrap>
-                    <BundleWrap>
-                      <BundleImage src={CalenderIcon} />
-                      <BundleText>
-                        {dayjs(project.postedAt).fromNow()}
+                      <BundleImage src={ProposalsIcon} />
+                      <BundleText style={{ color: '#5BBB7B' }}>
+                        {project.proposals} Proposals
                       </BundleText>
                     </BundleWrap>
-                  </DetailsBundle>
-                  <BundleWrap>
-                    <BundleImage src={ProposalsIcon} />
-                    <BundleText style={{ color: '#5BBB7B' }}>
-                      {project.proposals} Proposals
-                    </BundleText>
-                  </BundleWrap>
-                  <ProjPrice>
-                    <ProjNum>
-                      ${project.amount}/{project.type}
-                    </ProjNum>
-                  </ProjPrice>
-                </ProjectWrap>
-              </Content>
-            ))}
-          </ContentWrap>
-          <PaginationSection>
-            <PageBtns>
-              <PageNum
-                style={{ border: '1px solid black' }}
-                onClick={handlePrevPage}
-              >
-                <PaginationIcon src={PrevIcon} />
-              </PageNum>
-              {[1, 2, 3, 4, 5].map((num) => (
-                <PageNum
-                  key={num}
-                  selected={num === currentPage}
-                  onClick={() => setCurrentPage(num)}
-                >
-                  {num}
-                </PageNum>
+                    <ProjPrice>
+                      <ProjNum>
+                        ${project.amount}/{project.type}
+                      </ProjNum>
+                    </ProjPrice>
+                  </ProjectWrap>
+                </Content>
               ))}
+            </ContentWrap>
+            <PaginationSection>
+              <PageBtns>
+                <PageNum
+                  style={{ border: '1px solid black' }}
+                  onClick={handlePrevPage}
+                >
+                  <PaginationIcon src={PrevIcon} />
+                </PageNum>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <PageNum
+                    key={num}
+                    selected={num === currentPage}
+                    onClick={() => setCurrentPage(num)}
+                  >
+                    {num}
+                  </PageNum>
+                ))}
 
-              <PageNum>...</PageNum>
-              <PageNum>20</PageNum>
-              <PageNum
-                style={{ border: '1px solid black' }}
-                onClick={handleNextPage}
-              >
-                <PaginationIcon src={NextIcon} />
-              </PageNum>
-            </PageBtns>
-          </PaginationSection>
-        </BodyWrap>
+                <PageNum>...</PageNum>
+                <PageNum>20</PageNum>
+                <PageNum
+                  style={{ border: '1px solid black' }}
+                  onClick={handleNextPage}
+                >
+                  <PaginationIcon src={NextIcon} />
+                </PageNum>
+              </PageBtns>
+            </PaginationSection>
+          </BodyWrap>
+        )}
       </Wrap>
     </Layout>
   )
