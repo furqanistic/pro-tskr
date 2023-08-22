@@ -14,6 +14,7 @@ import Loader from './Loader'
 import Messages from './Dashboard/Messages'
 import AvailableProjects from './Explore/AvailableProjects'
 import ProposalDetails from './Explore/ProposalDetails'
+import UpdateProject from '../components/Dashboard/UpdateProject'
 
 const AnimatedRoutes = () => {
   const location = useLocation()
@@ -28,6 +29,10 @@ const AnimatedRoutes = () => {
             <Route path='projects'>
               <Route index element={<ProjectsPage />} />
               <Route path='post-project' element={<ProjectBudget />} />
+              <Route
+                path='update-project/:projectID'
+                element={<UpdateProject />}
+              />
             </Route>
             <Route path='messages' element={<Messages />} />
             <Route path='finances' element={<FinancesPage />} />

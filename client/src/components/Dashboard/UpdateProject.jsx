@@ -14,7 +14,7 @@ import { useQuery } from 'react-query'
 import { basicSchema, projectSchema } from '../../schemas'
 import { useFormik, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const Wrap = styled.div`
   padding: 2rem 4rem;
@@ -268,13 +268,13 @@ const ErrMsg = styled.p`
   margin-top: 0.3rem;
   text-align: start;
 `
-const PostProject = () => {
+const UpdateProject = () => {
   const { currentUser } = useSelector((state) => state.user)
   const [showPageOne, setshowPageOne] = useState(true)
   const [showPageTwo, setshowPageTwo] = useState(false)
   const [showPageThree, setshowPageThree] = useState(false)
+  const { projectID } = useParams()
 
-  const [cvalues, setCvalues] = useState()
   const navigate = useNavigate()
   const MainPage = () => {
     setshowPageOne(true)
@@ -295,7 +295,7 @@ const PostProject = () => {
   const handleProject = async (e) => {
     e.preventDefault()
     try {
-      await axiosInstance.post('upload/project', {
+      await axiosInstance.put(`upload/project/${projectID}`, {
         projectName: values.projectName,
         amount: values.amount,
         description: values.description,
@@ -325,10 +325,13 @@ const PostProject = () => {
       handleProject,
     })
 
-  const { data, status } = useQuery('post-project', async () => {
-    const res = await axiosInstance.get(`/upload/categories`)
+  const { data, status } = useQuery('update-project', async () => {
+    const res = await axiosInstance.get(
+      `/upload/project/64e2b7bd5107d98c61be242f`
+    )
     return res.data
   })
+
   if (status === 'loading') {
     return <Loader />
   }
@@ -358,12 +361,11 @@ const PostProject = () => {
         <form onSubmit={handleSubmit}>
           <PageHead>
             <HeadWrap>
-              <Title>Post a New Project</Title>
-              <Desc>Post a project for freelancers to apply to help with.</Desc>
+              <Title>Only Write In Field You Want To Update</Title>
+              <Desc>Update Your Project Here</Desc>
             </HeadWrap>
-            <HeadButton>Post a New Project</HeadButton>
+            <HeadButton onClick={handleProject}>Update</HeadButton>
           </PageHead>
-
           {showPageOne && !showPageTwo && !showPageThree && (
             <BodyWrap>
               <BodyHead>
@@ -596,4 +598,4 @@ const PostProject = () => {
   )
 }
 
-export default PostProject
+export default UpdateProject

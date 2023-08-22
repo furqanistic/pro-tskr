@@ -9,7 +9,7 @@ import ProposalsIcon from '/Dashboard/contract.svg'
 import PrevIcon from '/Dashboard/prev 1.svg'
 import NextIcon from '/Dashboard/next 1.svg'
 import { Link, useNavigate } from 'react-router-dom'
-import { useQuery } from 'react-query'
+import { QueryClient, useMutation, useQuery } from 'react-query'
 import { useSelector } from 'react-redux'
 import Loader from '../../pages/Loader'
 import { axiosInstance } from '../../config'
@@ -256,13 +256,17 @@ const NothingText = styled.p`
   font-size: 2rem;
   font-weight: 800;
 `
+
+const Linker = styled(Link)`
+  text-decoration: none;
+`
 const ProjectsPage = () => {
   const [activeCategory, setActiveCategory] = useState('Active Projects')
   const [lineStyles, setLineStyles] = useState({})
+  const [projects, setProjects] = useState([])
   const categoryRefs = {}
   const [currentPage, setCurrentPage] = useState(1) // assuming 1 as the starting page
   const { currentUser } = useSelector((state) => state.user)
-
   // Handle side icon click
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1)
@@ -287,14 +291,29 @@ const ProjectsPage = () => {
       })
     }
   }, [])
-
   // getting projects from database
-  const { data, error, status } = useQuery('user-projects', async () => {
-    const res = await axiosInstance.get(
-      `/upload/project/client/${currentUser._id}`
-    )
-    return res.data
-  })
+  const { data, error, status, refetch } = useQuery(
+    'user-projects',
+    async () => {
+      const res = await axiosInstance.get(
+        `/upload/project/client/${currentUser._id}`
+      )
+      return res.data
+    }
+  )
+
+  // it will delete a specific item
+  const handleDelete = (projectId) => {
+    // Make a DELETE request to the backend to delete the project
+    axiosInstance
+      .delete(`/upload/project/${projectId}`)
+      .then(() => {
+        // Update the projects state after successful deletion
+        setProjects(projects.filter((project) => project._id !== projectId))
+        refetch()
+      })
+      .catch((error) => console.error(error))
+  }
 
   if (status === 'loading') {
     return <Loader />
@@ -363,8 +382,14 @@ const ProjectsPage = () => {
               {data.map((project) => (
                 <Content key={project._id}>
                   <ContentCorner>
-                    <Button src={EditIcon} bg='#EAF6EE' />
-                    <Button src={DeleteIcon} bg='#FCEDED' />
+                    <Linker to={`update-project/${project._id}`}>
+                      <Button src={EditIcon} bg='#EAF6EE' />
+                    </Linker>
+                    <Button
+                      src={DeleteIcon}
+                      bg='#FCEDED'
+                      onClick={() => handleDelete(project._id)}
+                    />
                   </ContentCorner>
                   <ProjectWrap>
                     <ProjectCat>{project.category}</ProjectCat>

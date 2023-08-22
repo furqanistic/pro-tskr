@@ -20,6 +20,8 @@ import { Link, useParams } from 'react-router-dom'
 import Pricebar from '../../components/Explore/Pricebar'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import Rating from '../../components/Explore/Rating'
+import RatingComments from '../../components/Explore/RatingComments'
 dayjs.extend(relativeTime)
 const AppContainer = styled.div`
   display: flex;
@@ -241,14 +243,29 @@ const ProposalData = styled.p`
 `
 const ProposalDataMore = styled.p`
   /* 15/Medium */
-  font-family: DM Sans;
   font-size: 0.9375rem;
   font-style: normal;
   font-weight: 500;
   line-height: 1.75rem;
   margin-left: 5px;
 `
-
+const SeeMoreBtn = styled.button`
+  border: none;
+  cursor: pointer;
+  background-color: #f1fcfa;
+  display: flex;
+  width: 12.5625rem;
+  padding: 0.6875rem 1.125rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  color: #5bbb7b;
+  font-size: 0.9375rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.75rem; /* 186.667% */
+  margin-bottom: 5rem;
+`
 const ProposalDetails = () => {
   const { projectID } = useParams()
 
@@ -405,10 +422,15 @@ const ProposalDetails = () => {
               <ProposalDataMore>0</ProposalDataMore>
             </PropsBox>
             <Line />
-            <ProjectDescriptionTitle style={{ marginBottom: '15rem' }}>
+            <ProjectDescriptionTitle>
               Client's Recent History (0)
             </ProjectDescriptionTitle>
-            {/* // yaha sy progress bar banani hay */}
+            <Rating />
+            <RatingComments />
+            <RatingComments />
+            <RatingComments />
+            <RatingComments />
+            <SeeMoreBtn>See More</SeeMoreBtn>
           </LayoutLeft>
           <LayoutRight>
             <SideBar>
@@ -417,7 +439,6 @@ const ProposalDetails = () => {
           </LayoutRight>
         </PageLayout>
       </AppContainer>
-
       <Footer />
     </>
   )

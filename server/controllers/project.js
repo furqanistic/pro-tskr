@@ -27,13 +27,59 @@ export const getProjectById = async (req, res) => {
 // 3. Update a project
 export const updateProject = async (req, res) => {
   try {
-    const project = await Project.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    })
+    // Create an object to hold only the fields you want to update
+    const updateFields = {}
+
+    // Add the fields you want to update to the updateFields object
+    if (req.body.title) {
+      updateFields.title = req.body.title
+    }
+
+    if (req.body.option) {
+      updateFields.option = req.body.option
+    }
+
+    if (req.body.category) {
+      updateFields.category = req.body.category
+    }
+
+    if (req.body.projectName) {
+      updateFields.projectName = req.body.projectName
+    }
+
+    if (req.body.description) {
+      updateFields.description = req.body.description
+    }
+
+    if (req.body.deliverables) {
+      updateFields.deliverables = req.body.deliverables
+    }
+
+    if (req.body.type) {
+      updateFields.type = req.body.type
+    }
+
+    if (req.body.proposals) {
+      updateFields.proposals = req.body.proposals
+    }
+
+    if (req.body.files) {
+      updateFields.files = req.body.files
+    }
+
+    // You can continue adding other fields here...
+
+    // Update the project using only the specified fields
+    const project = await Project.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    )
+
     if (!project) {
       return res.status(404).send({ message: 'Project not found' })
     }
+
     res.send(project)
   } catch (error) {
     res.status(400).send(error)
