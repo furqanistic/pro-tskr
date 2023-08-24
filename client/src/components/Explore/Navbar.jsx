@@ -78,6 +78,9 @@ const CategoryName = styled.p`
       : 'none'}; // green underline for selected
 
   transition: border-top 0.3s, color 0.3s; // smooth transition for changes
+  flex-shrink: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 const SignUpBtn = styled.div`

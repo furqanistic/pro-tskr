@@ -30,7 +30,7 @@ const Left = styled.div`
 `
 const Logo = styled.img`
   object-fit: contain;
-  width: 120px;
+  width: 40px;
   margin-left: 15px;
 `
 // MID SECTION OF TOPBAR
@@ -60,6 +60,15 @@ const RightIconImg = styled.img`
   width: 20px;
   margin-right: 25px;
 `
+const LogoName = styled.p`
+  color: #fff;
+  font-family: DM Sans;
+  font-size: 1.5rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  margin-left: 10px;
+`
 const Topbar = (props) => {
   return (
     <>
@@ -67,6 +76,9 @@ const Topbar = (props) => {
         <BarWrap>
           <Left>
             <Logo src={CompanyLogo} />
+            <LogoName>
+              Tskr<a style={{ color: '#5BBB7B' }}>.com</a>
+            </LogoName>
           </Left>
           <Mid>
             <IconImg src={SideBarControlIcon} onClick={props.toggleSidebar} />

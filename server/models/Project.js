@@ -66,6 +66,8 @@ const ProjectSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    bids: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bid' }],
+    awardedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     files: [
       {
         filename: String, // The name of the file as stored in storage service

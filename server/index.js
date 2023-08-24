@@ -5,6 +5,7 @@ import authRoute from './routes/auth.js'
 import portfoliosRoute from './routes/portfolio/index.js'
 import reviewsRoute from './routes/ratings/index.js'
 import projectRoute from './routes/project.js'
+import BidRoute from './routes/bid.js'
 import cookieParser from 'cookie-parser'
 import path from 'path'
 
@@ -30,6 +31,7 @@ app.use('/api/auth/', authRoute)
 app.use('/api/portfolios/', portfoliosRoute)
 app.use('/api/reviews/', reviewsRoute)
 app.use('/api/upload/', projectRoute)
+app.use('/api/submit/', BidRoute)
 // MongoDB connection function
 const connect = async () => {
   try {

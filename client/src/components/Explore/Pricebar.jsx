@@ -4,6 +4,7 @@ import dpIcon from '/Explore/dp.png'
 import starIcon from '/Explore/star.svg'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { Link } from 'react-router-dom'
 dayjs.extend(relativeTime)
 const Wrap = styled.div`
   background-color: white;
@@ -39,6 +40,8 @@ const BidType = styled.p`
   margin-bottom: 20px;
 `
 const SubmitBid = styled.button`
+  cursor: pointer;
+
   display: flex;
   padding: 0.6875rem 1.125rem;
   justify-content: center;
@@ -52,9 +55,12 @@ const SubmitBid = styled.button`
   margin-bottom: 10px;
   color: white;
   font-weight: 600;
+  width: 100%;
 `
 
 const SaveJobBtn = styled.button`
+  cursor: pointer;
+
   display: flex;
   padding: 0.6875rem 1.125rem;
   justify-content: center;
@@ -212,13 +218,19 @@ const Btn = styled.button`
   cursor: pointer;
   margin-top: 15px;
 `
+const Linker = styled(Link)`
+  text-decoration: none;
+  width: 100%;
+`
 const Pricebar = ({ userInfo, projectinfo }) => {
   return (
     <Wrap>
       <BidBox>
         <BidPrice>$400</BidPrice>
         <BidType>Hourly</BidType>
-        <SubmitBid>Submit a Proposal</SubmitBid>
+        <Linker to={`submit/${projectinfo._id}`}>
+          <SubmitBid>Submit a Proposal</SubmitBid>
+        </Linker>
         <SaveJobBtn>Save Job</SaveJobBtn>
         <Line />
         <SendTxt>Send a proposal for: 8 bids</SendTxt>

@@ -285,7 +285,9 @@ const ProposalDetails = () => {
 
       <AppContainer>
         <Header>
-          <HeaderRoute>Home / Available Projects</HeaderRoute>
+          <HeaderRoute>
+            Home / Available Projects / {data.projectName}
+          </HeaderRoute>
           <HeaderBlock>
             <HeaderImage src={bgImg} />
 

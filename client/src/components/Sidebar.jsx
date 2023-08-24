@@ -82,10 +82,10 @@ const Sidebar = (props) => {
         <LeftWrap>
           <SectionWrap>
             <Company>Tskr</Company>
-            <Link to='/' style={{ textDecoration: 'none' }}>
+            <Link to='/jobs' style={{ textDecoration: 'none' }}>
               <CategoriesSet>
                 <Icon src={HomeIcon} />
-                <CatName>Dashboard</CatName>
+                <CatName>Home</CatName>
               </CategoriesSet>
             </Link>
             <Link to='/projects' style={{ textDecoration: 'none' }}>

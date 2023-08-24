@@ -67,3 +67,28 @@ export const projectSchema = yup.object().shape({
     .required('Expected deliverables are required')
     .min(10, 'Please provide more detailed deliverables'),
 })
+
+export const bidSchema = yup.object().shape({
+  amount: yup
+    .number()
+    .required('Bid amount is required')
+    .min(1, 'Amount should be at least 1')
+    .typeError('Amount must be a number'),
+
+  message: yup
+    .string()
+    .required('A message or description is required for your bid')
+    .min(10, 'Your message should have at least 10 characters'),
+  proposedDuration: yup
+    .string()
+    .required(
+      'Please specify how long you propose to take to complete the project'
+    )
+    .min(3, 'Please provide a more detailed duration'),
+
+  attachments: yup
+    .array()
+    .of(yup.string().url('Must be a valid URL'))
+    .min(1, 'At least one attachment or link is required')
+    .nullable(),
+})

@@ -3,12 +3,11 @@ import Topbar from '../components/Registration/Topbar'
 import { keyframes, styled } from 'styled-components'
 import UpIcon from '/Auth/Up.svg'
 import EyeIcon from '/Auth/eve.svg'
+import EyeHideIcon from '/Auth/hide.svg'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { basicSchema } from '../schemas'
 import { useFormik } from 'formik'
-import axios from 'axios'
 import { axiosInstance } from '../config'
-import { useSelector } from 'react-redux'
 const PageBody = styled.div`
   background-color: #ffede8;
   width: 100%;
@@ -120,6 +119,7 @@ const InputFieldPass = styled(InputField)`
 const InputLogo = styled.img`
   width: 40px;
   padding: 8px;
+  cursor: pointer;
 `
 
 const Btn = styled.button`
@@ -229,11 +229,13 @@ const Loader = styled.span`
 `
 const SignUp = () => {
   const [selected, setSelected] = useState(null)
-  const [showFailure, setShowFailure] = useState(false)
   const [loading, setLoading] = useState(false)
-
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const navigate = useNavigate()
 
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible)
+  }
   // scroll animation
   const scrollToTop = () => {
     window.scrollTo({
@@ -252,11 +254,11 @@ const SignUp = () => {
         lname: values.lname,
         email: values.email,
         password: values.password,
+        role: selected,
       })
       setLoading(false)
       navigate('/')
     } catch (err) {
-      setShowFailure(true)
       console.log(err)
     }
   }
@@ -267,6 +269,7 @@ const SignUp = () => {
         lname: '',
         email: '',
         password: '',
+        role: '',
       },
       validationSchema: basicSchema,
       handleSignUp,
@@ -353,10 +356,21 @@ const SignUp = () => {
                     onBlur={handleBlur}
                     id='password'
                     placeholder='Enter your Password... '
-                    type='password'
+                    type={isPasswordVisible ? 'text' : 'password'}
                     required={true}
                   />
-                  <InputLogo src={EyeIcon} />
+                  {!isPasswordVisible && (
+                    <InputLogo
+                      src={EyeIcon}
+                      onClick={togglePasswordVisibility}
+                    />
+                  )}
+                  {isPasswordVisible && (
+                    <InputLogo
+                      src={EyeHideIcon}
+                      onClick={togglePasswordVisibility}
+                    />
+                  )}
                 </InputWrap>
                 {errors.password && touched.password && (
                   <ErrMsg>{errors.password}</ErrMsg>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import Layout from '../../pages/Layout'
-import styled from 'styled-components'
+import Layout from '../Layout'
+import styled, { keyframes } from 'styled-components'
 import CaseIcon from '/Dashboard/Frame.svg'
 import PageIcon from '/Dashboard/Brief.svg'
 import DollarIcon from '/Dashboard/Dollar.svg'
@@ -8,13 +8,14 @@ import DollarGreenIcon from '/Dashboard/Dollargreen.svg'
 import DollarGIcon from '/Dashboard/dollarg.svg'
 import PencilBIcon from '/Dashboard/pencildark.svg'
 import CopyIcon from '/Explore/copy.svg'
-import Loader from '../../pages/Loader'
+import Loader from '../Loader'
 import { axiosInstance } from '../../config'
 import { useQuery } from 'react-query'
-import { basicSchema, projectSchema } from '../../schemas'
-import { useFormik, useFormikContext } from 'formik'
+import { projectSchema } from '../../schemas'
+import { useFormik } from 'formik'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import FindIcon from '/Explore/find.svg'
 
 const Wrap = styled.div`
   padding: 2rem 4rem;
@@ -268,13 +269,112 @@ const ErrMsg = styled.p`
   margin-top: 0.3rem;
   text-align: start;
 `
-const PostProject = () => {
+
+const Linker = styled(Link)`
+  text-decoration: none;
+`
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+  `
+
+const scaleUp = keyframes`
+  from {
+    transform: scale(0.5) translate(-50%, -50%);
+  }
+  to {
+    transform: scale(1) translate(-50%, -50%);
+  }
+`
+
+const Overlay = styled.div`
+  position: fixed; // Cover the whole viewport
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.593); // Semi-transparent black
+  z-index: 999; // Just behind the card
+  animation: ${fadeIn} 0.3s ease-out forwards;
+`
+
+const Card = styled.div`
+  background: #0c280c;
+  padding: 60px;
+  border-radius: 15px;
+  position: fixed; // Keep it fixed on screen
+  top: 50%; // Center vertically
+  left: 50%; // Center horizontally
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  animation: ${scaleUp} 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; // cubic-bezier values for easeOutQuart easing
+`
+
+const Circle = styled.div`
+  border-radius: 50%;
+  height: 150px;
+  width: 150px;
+  background: #006a23;
+  margin: 0 auto;
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
+
+const CheckmarkIcon = styled.i`
+  color: #00d246;
+  font-size: 100px;
+  line-height: 200px;
+  margin-left: -15px;
+`
+
+const SuccessTitle = styled.h1`
+  color: #00d246;
+  font-weight: 900;
+  font-size: 40px;
+  margin-bottom: 10px;
+`
+
+const Message = styled.p`
+  color: #ffffff;
+  font-size: 15px;
+  margin: 0;
+`
+const BrowseProjects = styled.button`
+  border: none;
+  background-color: #00d246;
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  font-weight: 300;
+  color: white;
+  font-size: 1rem;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+`
+const BtnImg = styled.img`
+  width: 16px;
+  margin-right: 7px;
+`
+
+const NewProject = () => {
   const { currentUser } = useSelector((state) => state.user)
   const [showPageOne, setshowPageOne] = useState(true)
   const [showPageTwo, setshowPageTwo] = useState(false)
   const [showPageThree, setshowPageThree] = useState(false)
+  const [showPopup, setShowPopup] = useState(false)
 
-  const [cvalues, setCvalues] = useState()
   const navigate = useNavigate()
   const MainPage = () => {
     setshowPageOne(true)
@@ -304,7 +404,7 @@ const PostProject = () => {
         option: values.option,
         category: values.category,
       })
-      navigate('/projects')
+      setShowPopup(true)
     } catch (err) {
       console.log(err)
     }
@@ -333,8 +433,9 @@ const PostProject = () => {
     return <Loader />
   }
 
-  const scopsCats = ['Easy', 'Medium', 'Hard']
+  const scopsCats = ['Choose Scope', 'Easy', 'Medium', 'Hard']
   const categories = [
+    'Choose Category',
     'Web & App design',
     'Content Writing',
     'Digital Marketing',
@@ -355,6 +456,24 @@ const PostProject = () => {
   return (
     <Layout>
       <Wrap>
+        {showPopup && (
+          <>
+            <Overlay />
+            <Card>
+              <Circle>
+                <CheckmarkIcon className='checkmark'>✓</CheckmarkIcon>
+              </Circle>
+              <SuccessTitle>Submitted</SuccessTitle>
+              <Message>Your Proposal is submitted successfully!</Message>
+              <Linker to='/projects'>
+                <BrowseProjects>
+                  <BtnImg src={FindIcon} />
+                  Back to Projects
+                </BrowseProjects>
+              </Linker>
+            </Card>
+          </>
+        )}
         <form onSubmit={handleSubmit}>
           <PageHead>
             <HeadWrap>
@@ -596,4 +715,4 @@ const PostProject = () => {
   )
 }
 
-export default PostProject
+export default NewProject

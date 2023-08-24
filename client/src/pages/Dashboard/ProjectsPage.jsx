@@ -11,10 +11,11 @@ import NextIcon from '/Dashboard/next 1.svg'
 import { Link, useNavigate } from 'react-router-dom'
 import { QueryClient, useMutation, useQuery } from 'react-query'
 import { useSelector } from 'react-redux'
-import Loader from '../../pages/Loader'
+import FindIcon from '/Explore/find.svg'
 import { axiosInstance } from '../../config'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import LoaderBasic from '../LoaderBasic'
 dayjs.extend(relativeTime)
 
 const Wrap = styled.div`
@@ -74,6 +75,16 @@ const BodyWrap = styled.div`
   width: 100%;
   background-color: white;
   padding: 1rem;
+`
+const BodyWrapLoader = styled.div`
+  height: 100%;
+  width: 100%;
+  background-color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 `
 
 const CatBar = styled.div`
@@ -256,7 +267,6 @@ const NothingText = styled.p`
   font-size: 2rem;
   font-weight: 800;
 `
-
 const Linker = styled(Link)`
   text-decoration: none;
 `
@@ -264,6 +274,7 @@ const ProjectsPage = () => {
   const [activeCategory, setActiveCategory] = useState('Active Projects')
   const [lineStyles, setLineStyles] = useState({})
   const [projects, setProjects] = useState([])
+  const [delLoader, setDelLoader] = useState(false)
   const categoryRefs = {}
   const [currentPage, setCurrentPage] = useState(1) // assuming 1 as the starting page
   const { currentUser } = useSelector((state) => state.user)
@@ -295,28 +306,32 @@ const ProjectsPage = () => {
   const { data, error, status, refetch } = useQuery(
     'user-projects',
     async () => {
-      const res = await axiosInstance.get(
-        `/upload/project/client/${currentUser._id}`
-      )
-      return res.data
+      try {
+        const res = await axiosInstance.get(
+          `/upload/project/client/${currentUser._id}`
+        )
+        return res.data
+      } catch (err) {
+        if (err.response && err.response.data && err.response.data.message) {
+          throw new Error(err.response.data.message)
+        }
+        throw err // For other types of errors
+      }
     }
   )
-
   // it will delete a specific item
   const handleDelete = (projectId) => {
+    setDelLoader(true)
     // Make a DELETE request to the backend to delete the project
     axiosInstance
       .delete(`/upload/project/${projectId}`)
       .then(() => {
         // Update the projects state after successful deletion
         setProjects(projects.filter((project) => project._id !== projectId))
-        refetch()
+        window.location.reload()
+        setDelLoader(false)
       })
       .catch((error) => console.error(error))
-  }
-
-  if (status === 'loading') {
-    return <Loader />
   }
 
   const categories = [
@@ -348,15 +363,21 @@ const ProjectsPage = () => {
             <HeadButton>Add a New Project</HeadButton>
           </Link>
         </PageHead>
-        {error && (
-          <BodyWrap style={{ minHeight: '900px' }}>
-            <NothingDiv>
-              <NothingText>Nothing Posted Yet</NothingText>
-              <Link to='post-project' style={{ textDecoration: 'none' }}>
-                <HeadButton>Add a New Project</HeadButton>
-              </Link>
-            </NothingDiv>
-          </BodyWrap>
+        {status === 'loading' ? (
+          <BodyWrapLoader style={{ minHeight: '80vh' }}>
+            <LoaderBasic Message={'Searching for recent projects...'} />
+          </BodyWrapLoader>
+        ) : (
+          error && (
+            <BodyWrap style={{ minHeight: '900px' }}>
+              <NothingDiv>
+                <NothingText>{error.message}</NothingText>
+                <Linker to='post-project'>
+                  <HeadButton>Add a New Project</HeadButton>
+                </Linker>
+              </NothingDiv>
+            </BodyWrap>
+          )
         )}
         {data && (
           <BodyWrap>
@@ -378,50 +399,56 @@ const ProjectsPage = () => {
             {activeCategory && (
               <ActiveLine $left={lineStyles.left} $width={lineStyles.width} />
             )}
-            <ContentWrap>
-              {data.map((project) => (
-                <Content key={project._id}>
-                  <ContentCorner>
-                    <Linker to={`update-project/${project._id}`}>
-                      <Button src={EditIcon} bg='#EAF6EE' />
-                    </Linker>
-                    <Button
-                      src={DeleteIcon}
-                      bg='#FCEDED'
-                      onClick={() => handleDelete(project._id)}
-                    />
-                  </ContentCorner>
-                  <ProjectWrap>
-                    <ProjectCat>{project.category}</ProjectCat>
-                    <ProLine />
-                    <ProName>{project.projectName}</ProName>
-                    <DetailsBundle>
+            {delLoader ? (
+              <BodyWrapLoader style={{ minHeight: '60vh' }}>
+                <LoaderBasic Message={'Sending Project to Trash'} />
+              </BodyWrapLoader>
+            ) : (
+              <ContentWrap>
+                {data.map((project) => (
+                  <Content key={project._id}>
+                    <ContentCorner>
+                      <Linker to={`update-project/${project._id}`}>
+                        <Button src={EditIcon} bg='#EAF6EE' />
+                      </Linker>
+                      <Button
+                        src={DeleteIcon}
+                        bg='#FCEDED'
+                        onClick={() => handleDelete(project._id)}
+                      />
+                    </ContentCorner>
+                    <ProjectWrap>
+                      <ProjectCat>{project.category}</ProjectCat>
+                      <ProLine />
+                      <ProName>{project.projectName}</ProName>
+                      <DetailsBundle>
+                        <BundleWrap>
+                          <BundleImage src={PlaceIcon} />
+                          <BundleText>London, Uk</BundleText>
+                        </BundleWrap>
+                        <BundleWrap>
+                          <BundleImage src={CalenderIcon} />
+                          <BundleText>
+                            {dayjs(project.postedAt).fromNow()}
+                          </BundleText>
+                        </BundleWrap>
+                      </DetailsBundle>
                       <BundleWrap>
-                        <BundleImage src={PlaceIcon} />
-                        <BundleText>London, Uk</BundleText>
-                      </BundleWrap>
-                      <BundleWrap>
-                        <BundleImage src={CalenderIcon} />
-                        <BundleText>
-                          {dayjs(project.postedAt).fromNow()}
+                        <BundleImage src={ProposalsIcon} />
+                        <BundleText style={{ color: '#5BBB7B' }}>
+                          {project.proposals} Proposals
                         </BundleText>
                       </BundleWrap>
-                    </DetailsBundle>
-                    <BundleWrap>
-                      <BundleImage src={ProposalsIcon} />
-                      <BundleText style={{ color: '#5BBB7B' }}>
-                        {project.proposals} Proposals
-                      </BundleText>
-                    </BundleWrap>
-                    <ProjPrice>
-                      <ProjNum>
-                        ${project.amount}/{project.type}
-                      </ProjNum>
-                    </ProjPrice>
-                  </ProjectWrap>
-                </Content>
-              ))}
-            </ContentWrap>
+                      <ProjPrice>
+                        <ProjNum>
+                          ${project.amount}/${project.type}
+                        </ProjNum>
+                      </ProjPrice>
+                    </ProjectWrap>
+                  </Content>
+                ))}
+              </ContentWrap>
+            )}
             <PaginationSection>
               <PageBtns>
                 <PageNum

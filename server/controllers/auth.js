@@ -74,3 +74,55 @@ export const updateUser = async (req, res, next) => {
     next(error)
   }
 }
+
+export const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.params.id
+
+    // Ensure the user is authenticated and either deleting their own account or is an admin
+    if (req.body.userId !== userId && req.userRole !== 'admin') {
+      return res.status(403).send('You can only delete your own account')
+    }
+
+    const deletedUser = await User.findByIdAndDelete(userId)
+    if (!deletedUser) {
+      return res.status(404).send('User not found')
+    }
+
+    res.status(200).send('User deleted successfully')
+  } catch (error) {
+    next(error)
+  }
+}
+
+// GET USER PROFILE
+export const getUserProfile = async (req, res, next) => {
+  try {
+    const userId = req.params.id
+    const user = await User.findById(userId)
+      .select('-password')
+      .populate('bids') // Exclude password from the output
+
+    if (!user) {
+      return res.status(404).send('User not found')
+    }
+
+    res.status(200).json(user)
+  } catch (error) {
+    next(error)
+  }
+}
+
+// GET ALL USERS - Probably for admin purposes
+export const getAllUsers = async (req, res, next) => {
+  try {
+    if (req.userRole !== 'admin') {
+      return res.status(403).send('Access denied. Admins only.')
+    }
+
+    const users = await User.find().select('-password') // Exclude password from the output
+    res.status(200).json(users)
+  } catch (error) {
+    next(error)
+  }
+}

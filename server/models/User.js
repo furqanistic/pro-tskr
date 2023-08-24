@@ -27,7 +27,7 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      // required: true,
+      enum: ['freelancer', 'client'],
     },
     profilePicture: String,
     registrationDate: {
@@ -41,6 +41,12 @@ const UserSchema = new mongoose.Schema(
     hourlyRate: Number,
     totalHoursWorked: Number,
     jobSuccessScore: Number, // e.g., 0-100
+    bids: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Bid',
+      },
+    ],
 
     // Fields for references to other collections
     portfolios: [

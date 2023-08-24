@@ -119,9 +119,7 @@ export const getProjectsByClientId = async (req, res, next) => {
     const projects = await Project.find({ client: clientId })
 
     if (!projects.length) {
-      return res
-        .status(404)
-        .json({ message: 'No projects found for the given client ID.' })
+      return res.status(404).json({ message: 'No projects found' })
     }
 
     return res.status(200).json(projects)
@@ -147,5 +145,46 @@ export const getOptions = (req, res) => {
   } catch (error) {
     console.error('Error fetching options:', error)
     res.status(500).json({ error: 'Failed to fetch options' })
+  }
+}
+
+// 6. Submit a proposal for a project
+export const submitProposal = async (req, res) => {
+  try {
+    const projectId = req.params.id // Assuming you're passing project ID as a route parameter
+    const { proposalText, budget } = req.body
+
+    if (!proposalText || !budget) {
+      return res
+        .status(400)
+        .json({ message: 'Both proposalText and budget are required' })
+    }
+
+    const project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    const newProposal = {
+      proposalText,
+      budget,
+      freelancer: req.user._id, // Assuming you have authentication and user data available
+    }
+
+    // Assuming your schema has a field for an array of proposals
+    project.proposals.push(newProposal)
+
+    // Update the proposals count in the project
+    project.proposals = project.proposals.length
+
+    await project.save()
+
+    res.status(201).json({
+      message: 'Proposal submitted successfully',
+      proposal: newProposal,
+    })
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to submit proposal' })
   }
 }
