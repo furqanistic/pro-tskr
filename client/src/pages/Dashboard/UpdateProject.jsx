@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '../../pages/Layout'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import CaseIcon from '/Dashboard/Frame.svg'
 import PageIcon from '/Dashboard/Brief.svg'
 import DollarIcon from '/Dashboard/Dollar.svg'
@@ -14,7 +14,8 @@ import { useQuery } from 'react-query'
 import { basicSchema, projectSchema } from '../../schemas'
 import { useFormik, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import LoaderBasic from '../LoaderBasic'
 
 const Wrap = styled.div`
   padding: 2rem 4rem;
@@ -268,11 +269,121 @@ const ErrMsg = styled.p`
   margin-top: 0.3rem;
   text-align: start;
 `
+const Linker = styled(Link)`
+  text-decoration: none;
+`
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+  `
+
+const scaleUp = keyframes`
+  from {
+    transform: scale(0.5) translate(-50%, -50%);
+  }
+  to {
+    transform: scale(1) translate(-50%, -50%);
+  }
+`
+
+const Overlay = styled.div`
+  position: fixed; // Cover the whole viewport
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.593); // Semi-transparent black
+  z-index: 999; // Just behind the card
+  animation: ${fadeIn} 0.3s ease-out forwards;
+`
+
+const Card = styled.div`
+  background: #0c280c;
+  padding: 60px;
+  border-radius: 15px;
+  position: fixed; // Keep it fixed on screen
+  top: 50%; // Center vertically
+  left: 50%; // Center horizontally
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  animation: ${scaleUp} 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; // cubic-bezier values for easeOutQuart easing
+`
+
+const Circle = styled.div`
+  border-radius: 50%;
+  height: 150px;
+  width: 150px;
+  background: #006a23;
+  margin: 0 auto;
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
+
+const CheckmarkIcon = styled.i`
+  color: #00d246;
+  font-size: 100px;
+  line-height: 200px;
+  margin-left: -15px;
+`
+
+const SuccessTitle = styled.h1`
+  color: #00d246;
+  font-weight: 900;
+  font-size: 40px;
+  margin-bottom: 10px;
+`
+
+const Message = styled.p`
+  color: #ffffff;
+  font-size: 15px;
+  margin: 0;
+`
+const BrowseProjects = styled.button`
+  border: none;
+  background-color: #00d246;
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  font-weight: 300;
+  color: white;
+  font-size: 1rem;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+`
+const BtnImg = styled.img`
+  width: 16px;
+  margin-right: 7px;
+`
+const BodyWrapLoader = styled.div`
+  height: 100%;
+  width: 100%;
+  background-color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`
+
 const UpdateProject = () => {
   const { currentUser } = useSelector((state) => state.user)
   const [showPageOne, setshowPageOne] = useState(true)
   const [showPageTwo, setshowPageTwo] = useState(false)
   const [showPageThree, setshowPageThree] = useState(false)
+  const [showPopup, setShowPopup] = useState(false)
+
   const { projectID } = useParams()
 
   const navigate = useNavigate()
@@ -332,10 +443,6 @@ const UpdateProject = () => {
     return res.data
   })
 
-  if (status === 'loading') {
-    return <Loader />
-  }
-
   const scopsCats = ['Easy', 'Medium', 'Hard']
   const categories = [
     'Web & App design',
@@ -358,241 +465,265 @@ const UpdateProject = () => {
   return (
     <Layout>
       <Wrap>
-        <form onSubmit={handleSubmit}>
-          <PageHead>
-            <HeadWrap>
-              <Title>Only Write In Field You Want To Update</Title>
-              <Desc>Update Your Project Here</Desc>
-            </HeadWrap>
-            <HeadButton onClick={handleProject}>Update</HeadButton>
-          </PageHead>
-          {showPageOne && !showPageTwo && !showPageThree && (
-            <BodyWrap>
-              <BodyHead>
-                <StepsWrap>
-                  <StepImg src={CaseIcon} bg='#222222' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-                <StepsWrap>
-                  <StepImg src={DollarGIcon} bg='#EAF6EE' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-                <StepsWrap>
-                  <StepImg src={PageIcon} bg='#EAF6EE' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-              </BodyHead>
-              <PageTwoBars>
-                <BudgetDetails>
-                  <BarName>Project Title</BarName>
-                  <AmountBar>
-                    <InputAmount
-                      value={values.projectName}
+        {showPopup && (
+          <>
+            <Overlay />
+            <Card>
+              <Circle>
+                <CheckmarkIcon className='checkmark'>✓</CheckmarkIcon>
+              </Circle>
+              <SuccessTitle>Submitted</SuccessTitle>
+              <Message>Your Proposal is updated successfully!</Message>
+              <Linker to='/projects'>
+                <BrowseProjects>
+                  <BtnImg src={FindIcon} />
+                  Back to Projects
+                </BrowseProjects>
+              </Linker>
+            </Card>
+          </>
+        )}
+        {status === 'loading' ? (
+          <BodyWrapLoader style={{ minHeight: '80vh' }}>
+            <LoaderBasic Message={'Only Fill the required fields...'} />
+          </BodyWrapLoader>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <PageHead>
+              <HeadWrap>
+                <Title>Only Write In Field You Want To Update</Title>
+                <Desc>Update Your Project Here</Desc>
+              </HeadWrap>
+              <HeadButton onClick={handleProject}>Update</HeadButton>
+            </PageHead>
+            {showPageOne && !showPageTwo && !showPageThree && (
+              <BodyWrap>
+                <BodyHead>
+                  <StepsWrap>
+                    <StepImg src={CaseIcon} bg='#222222' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                  <StepsWrap>
+                    <StepImg src={DollarGIcon} bg='#EAF6EE' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                  <StepsWrap>
+                    <StepImg src={PageIcon} bg='#EAF6EE' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                </BodyHead>
+                <PageTwoBars>
+                  <BudgetDetails>
+                    <BarName>Project Title</BarName>
+                    <AmountBar>
+                      <InputAmount
+                        value={values.projectName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        id='projectName'
+                        placeholder='Enter Project Name...'
+                        type='text'
+                      />
+                    </AmountBar>
+                    {errors.projectName && touched.projectName && (
+                      <ErrMsg>{errors.projectName}</ErrMsg>
+                    )}
+                  </BudgetDetails>
+                  <BudgetDetails>
+                    <BarName>Project Scope</BarName>
+                    <SelectCat
+                      value={values.option}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      id='projectName'
-                      placeholder='Enter Project Name...'
+                      id='option'
+                      name='option'
+                    >
+                      {scopsCats.map((category) => (
+                        <SelectOpt key={category} value={category}>
+                          {category}
+                        </SelectOpt>
+                      ))}
+                    </SelectCat>
+                    {errors.option && touched.option && (
+                      <ErrMsg>{errors.option}</ErrMsg>
+                    )}
+                  </BudgetDetails>
+                </PageTwoBars>
+                <BudgetDetails>
+                  <BarName>Project Description</BarName>
+                  <AmountBar>
+                    <TextBox
+                      value={values.description}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      id='description'
+                      placeholder='Enter Description...'
                       type='text'
                     />
                   </AmountBar>
-                  {errors.projectName && touched.projectName && (
-                    <ErrMsg>{errors.projectName}</ErrMsg>
+                  {errors.description && touched.description && (
+                    <ErrMsg>{errors.description}</ErrMsg>
                   )}
                 </BudgetDetails>
-                <BudgetDetails>
-                  <BarName>Project Scope</BarName>
-                  <SelectCat
-                    value={values.option}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    id='option'
-                    name='option'
-                  >
-                    {scopsCats.map((category) => (
-                      <SelectOpt key={category} value={category}>
-                        {category}
-                      </SelectOpt>
-                    ))}
-                  </SelectCat>
-                  {errors.option && touched.option && (
-                    <ErrMsg>{errors.option}</ErrMsg>
-                  )}
-                </BudgetDetails>
-              </PageTwoBars>
-              <BudgetDetails>
-                <BarName>Project Description</BarName>
-                <AmountBar>
-                  <TextBox
-                    value={values.description}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    id='description'
-                    placeholder='Enter Description...'
-                    type='text'
-                  />
-                </AmountBar>
-                {errors.description && touched.description && (
-                  <ErrMsg>{errors.description}</ErrMsg>
-                )}
-              </BudgetDetails>
-              <ButtonSet>
-                <Butn bg='#EAF6EE' dg='#2DC66A'>
-                  Previous
-                </Butn>
-                <Butn bg='#2DC66A' dg='#EAF6EE' onClick={NextPage}>
-                  Next Step
-                </Butn>
-              </ButtonSet>
-            </BodyWrap>
-          )}
-          {!showPageOne && showPageTwo && !showPageThree && (
-            <BodyWrap>
-              <BodyHead>
-                <StepsWrap>
-                  <StepImg src={CaseIcon} bg='#5BBB7B' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-                <StepsWrap>
-                  <StepImg src={DollarIcon} bg='#222222' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-                <StepsWrap>
-                  <StepImg src={PageIcon} bg='#EAF6EE' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-              </BodyHead>
-              <PageTwoBars>
-                <BudgetDetails>
-                  <BarName>Project Budget</BarName>
-                  <AmountBar>
-                    <InputImage src={DollarGreenIcon} />
-                    <InputAmount
-                      value={values.amount}
+                <ButtonSet>
+                  <Butn bg='#EAF6EE' dg='#2DC66A'>
+                    Previous
+                  </Butn>
+                  <Butn bg='#2DC66A' dg='#EAF6EE' onClick={NextPage}>
+                    Next Step
+                  </Butn>
+                </ButtonSet>
+              </BodyWrap>
+            )}
+            {!showPageOne && showPageTwo && !showPageThree && (
+              <BodyWrap>
+                <BodyHead>
+                  <StepsWrap>
+                    <StepImg src={CaseIcon} bg='#5BBB7B' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                  <StepsWrap>
+                    <StepImg src={DollarIcon} bg='#222222' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                  <StepsWrap>
+                    <StepImg src={PageIcon} bg='#EAF6EE' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                </BodyHead>
+                <PageTwoBars>
+                  <BudgetDetails>
+                    <BarName>Project Budget</BarName>
+                    <AmountBar>
+                      <InputImage src={DollarGreenIcon} />
+                      <InputAmount
+                        value={values.amount}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        id='amount'
+                        placeholder='Enter Amount...'
+                        type='number'
+                      />
+                    </AmountBar>
+                    {errors.amount && touched.amount && (
+                      <ErrMsg>{errors.amount}</ErrMsg>
+                    )}
+                  </BudgetDetails>
+                  <BudgetDetails>
+                    <BarName>Project Category</BarName>
+                    <SelectCat
+                      value={values.category}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      id='amount'
-                      placeholder='Enter Amount...'
-                      type='number'
+                      id='category'
+                      name='category'
+                    >
+                      {categories.map((category) => (
+                        <SelectOpt key={category} value={category}>
+                          {category}
+                        </SelectOpt>
+                      ))}
+                    </SelectCat>
+                    {errors.option && touched.option && (
+                      <ErrMsg>{errors.option}</ErrMsg>
+                    )}
+                  </BudgetDetails>
+                </PageTwoBars>
+                <BudgetDetails>
+                  <BarName>Expected Deliverables</BarName>
+                  <AmountBar>
+                    <TextBox
+                      value={values.deliverables}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      id='deliverables'
+                      placeholder='Enter Expected Deliverables...'
+                      type='text'
                     />
                   </AmountBar>
-                  {errors.amount && touched.amount && (
-                    <ErrMsg>{errors.amount}</ErrMsg>
+                  {errors.deliverables && touched.deliverables && (
+                    <ErrMsg>{errors.deliverables}</ErrMsg>
                   )}
                 </BudgetDetails>
+                <ButtonSet>
+                  <Butn bg='#EAF6EE' dg='#2DC66A' onClick={MainPage}>
+                    Previous
+                  </Butn>
+                  <Butn bg='#2DC66A' dg='#EAF6EE' onClick={LastPage}>
+                    Next Step
+                  </Butn>
+                </ButtonSet>
+              </BodyWrap>
+            )}
+            {!showPageOne && !showPageTwo && showPageThree && (
+              <BodyWrap>
+                <BodyHead>
+                  <StepsWrap>
+                    <StepImg src={CaseIcon} bg='#5BBB7B' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                  <StepsWrap>
+                    <StepImg src={DollarIcon} bg='#5BBB7B' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                  <StepsWrap>
+                    <StepImg src={PencilBIcon} bg='#222222' />
+                    <StepInfo>
+                      <StepName>Project Type</StepName>
+                      <StepDesc>Add Details here</StepDesc>
+                    </StepInfo>
+                  </StepsWrap>
+                </BodyHead>
                 <BudgetDetails>
-                  <BarName>Project Category</BarName>
-                  <SelectCat
-                    value={values.category}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    id='category'
-                    name='category'
-                  >
-                    {categories.map((category) => (
-                      <SelectOpt key={category} value={category}>
-                        {category}
-                      </SelectOpt>
-                    ))}
-                  </SelectCat>
-                  {errors.option && touched.option && (
-                    <ErrMsg>{errors.option}</ErrMsg>
-                  )}
+                  <BarName>Upload Attachments</BarName>
+                  <FilesWrap>
+                    <AttachmentBox>
+                      <AttachmentName>File Name</AttachmentName>
+                      <AttachmentIcon src={CopyIcon} />
+                    </AttachmentBox>
+                    <UploadMore>
+                      Upload More <FileInput placeholder='Upload Files' />
+                    </UploadMore>
+                  </FilesWrap>
                 </BudgetDetails>
-              </PageTwoBars>
-              <BudgetDetails>
-                <BarName>Expected Deliverables</BarName>
-                <AmountBar>
-                  <TextBox
-                    value={values.deliverables}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    id='deliverables'
-                    placeholder='Enter Expected Deliverables...'
-                    type='text'
-                  />
-                </AmountBar>
-                {errors.deliverables && touched.deliverables && (
-                  <ErrMsg>{errors.deliverables}</ErrMsg>
-                )}
-              </BudgetDetails>
-              <ButtonSet>
-                <Butn bg='#EAF6EE' dg='#2DC66A' onClick={MainPage}>
-                  Previous
-                </Butn>
-                <Butn bg='#2DC66A' dg='#EAF6EE' onClick={LastPage}>
-                  Next Step
-                </Butn>
-              </ButtonSet>
-            </BodyWrap>
-          )}
-          {!showPageOne && !showPageTwo && showPageThree && (
-            <BodyWrap>
-              <BodyHead>
-                <StepsWrap>
-                  <StepImg src={CaseIcon} bg='#5BBB7B' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-                <StepsWrap>
-                  <StepImg src={DollarIcon} bg='#5BBB7B' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-                <StepsWrap>
-                  <StepImg src={PencilBIcon} bg='#222222' />
-                  <StepInfo>
-                    <StepName>Project Type</StepName>
-                    <StepDesc>Add Details here</StepDesc>
-                  </StepInfo>
-                </StepsWrap>
-              </BodyHead>
-              <BudgetDetails>
-                <BarName>Upload Attachments</BarName>
-                <FilesWrap>
-                  <AttachmentBox>
-                    <AttachmentName>File Name</AttachmentName>
-                    <AttachmentIcon src={CopyIcon} />
-                  </AttachmentBox>
-                  <UploadMore>
-                    Upload More <FileInput placeholder='Upload Files' />
-                  </UploadMore>
-                </FilesWrap>
-              </BudgetDetails>
 
-              <RemiderText>Maximum File Size is 50mb</RemiderText>
-              <ButtonSet>
-                <Butn bg='#EAF6EE' dg='#2DC66A' onClick={NextPage}>
-                  Previous
-                </Butn>
-                <Butn bg='#2DC66A' dg='#EAF6EE' onClick={handleProject}>
-                  Save & Publish
-                </Butn>
-              </ButtonSet>
-            </BodyWrap>
-          )}
-        </form>
+                <RemiderText>Maximum File Size is 50mb</RemiderText>
+                <ButtonSet>
+                  <Butn bg='#EAF6EE' dg='#2DC66A' onClick={NextPage}>
+                    Previous
+                  </Butn>
+                  <Butn bg='#2DC66A' dg='#EAF6EE' onClick={handleProject}>
+                    Save & Publish
+                  </Butn>
+                </ButtonSet>
+              </BodyWrap>
+            )}
+          </form>
+        )}
       </Wrap>
     </Layout>
   )

@@ -8,7 +8,7 @@ import projectRoute from './routes/project.js'
 import BidRoute from './routes/bid.js'
 import cookieParser from 'cookie-parser'
 import path from 'path'
-
+const __dirname = path.resolve()
 const app = express()
 
 app.use(function (req, res, next) {
